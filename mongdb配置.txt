@@ -1,0 +1,21 @@
+#数据库数据存放目录
+dbpath=/mongodb/data
+#数据库日志存放目录
+logpath=/mongodb/logs/mongodb.log
+#以追加的方式记录日志
+logappend = true
+#端口号 默认为27017
+port=27017
+#开启用户认证
+#auth=true
+#关闭http接口，默认关闭http端口访问
+nohttpinterface=true
+#启用日志文件，默认启用
+journal=true
+#这个选项可以过滤掉一些无用的日志信息，若需要调试使用请设置为false
+quiet=true
+
+echo "/usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/data –logpath=/usr/local/server/mongodb/logs/mongodb.log –logappend --auth –port=27017" >> /etc/rc.local
+
+
+db.createUser({user:"root",pwd:"0p-0p-0p-",roles:["root"]});
