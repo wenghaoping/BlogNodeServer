@@ -18,4 +18,7 @@ quiet=true
 echo "/usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/data –logpath=/usr/local/server/mongodb/logs/mongodb.log –logappend --auth –port=27017" >> /etc/rc.local
 
 
+./mongod --config /usr/local/mongodb/etc/mongo.conf --fork
+
+
 db.createUser({user:"root",pwd:"0p-0p-0p-",roles:["root"]});
