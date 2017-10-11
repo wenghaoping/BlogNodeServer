@@ -1,4 +1,4 @@
-#数据库数据存放目录
+﻿#数据库数据存放目录
 dbpath=/mongodb/data
 #数据库日志存放目录
 logpath=/mongodb/logs/mongodb.log
@@ -18,4 +18,16 @@ quiet=true
 echo "/usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/data –logpath=/usr/local/server/mongodb/logs/mongodb.log –logappend --auth –port=27017" >> /etc/rc.local
 
 
+./mongod --config /usr/local/mongodb/etc/mongo.conf --fork
+
+
 db.createUser({user:"root",pwd:"0p-0p-0p-",roles:["root"]});
+
+
+
+mongod --config C:\MongoDB\etc\mongo.conf --install --auth
+
+
+mongod.exe --logpath C:\MongoDB\logs\mongodb.log --logappend --dbpath C:\MongoDB\data --directoryperdb --serviceName MongoDB --install
+
+mongod --config C:\MongoDB\etc\mongo.conf
