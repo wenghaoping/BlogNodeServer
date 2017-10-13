@@ -27,7 +27,17 @@ function init(){
             return;
         }
         db.collection('users').createIndex(
-            { "username": 1},
+            { "uese_id": 1},
+            null,
+            function(err, results) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+            }
+        );
+        db.collection('articles').createIndex(
+            { "art_id": 1},
             null,
             function(err, results) {
                 if (err) {

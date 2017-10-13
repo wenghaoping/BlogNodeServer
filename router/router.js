@@ -284,19 +284,31 @@ exports.getArticleDetail = function (req, res, next) {
         //得到表单之后做的事情
         var art_id = parseInt(fields.art_id);
         var edit = parseInt(fields.edit);
+        var accessTime = 0;
         db.find("articles",{"art_id" : art_id},function(err,result){
+
             let data = result.slice(0);
             if (err) {
                 res.send({"result":"-3"}); //服务器错误
                 return;
             }
+            accessTime = data[0].access_times;
+            console.log(accessTime);
             if(edit === 0){
                 data[0].detail = utils.markdown(data[0].detail);
                 data[0].main = utils.markdown(data[0].main);
             }
-            res.send({"result":data});
+            db.updateMany("articles", {"art_id": art_id}, {
+                $set: {
+                    "access_times": accessTime + 1,
+                }
+            }, function (err, results) {
 
+            });
+            res.send({"result":data});
         });
+
+
     });
 };
 
