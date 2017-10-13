@@ -16,3 +16,12 @@ source  来源表
     "id" : 4,
     "source" : "我们不熟"
 }
+
+users  用户名表
+
+user_name
+password
+checkPass
+source_id
+user_id
+privileges 0 普通 1 特权

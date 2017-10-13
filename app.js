@@ -1,8 +1,9 @@
 var express = require("express");
 var app = express();
 var router = require("./router/router.js");
-
 var session = require('express-session');
+
+var utils = require('./models/utils');
 
 app.all('*',function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -22,7 +23,10 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
-
+app.use(function (req, res, next) {
+    res.locals.utils = utils;
+    next();
+});
 //模板引擎
 app.set("view engine","ejs");
 //静态页面
@@ -38,6 +42,17 @@ app.post("/doRegist",router.doRegist);      //执行注册，Ajax服务
 app.post("/checkUser",router.checkUser);      //用户名是否存在
 
 app.post("/dologin",router.doLogin);        //执行登陆
+
+
+app.post("/doEdit",router.doEdit);        //创建文章
+app.post("/doDelete",router.doDelete);        //删除文章
+
+app.post("/getArticleList",router.getArticleList);        //获取文章列表个人
+app.post("/getArticleListAll",router.getArticleListAll);        //获取文章列表全部
+app.post("/getArticleDetail",router.getArticleDetail);        //获取文章详情
+
+
+
 
 // app.get("/regist",router.showRegist);       //显示注册页面
 

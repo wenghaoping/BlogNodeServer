@@ -7,8 +7,7 @@ var md5 = require("../models/md5.js");
 var path = require("path");
 var fs = require("fs");
 var gm = require("gm");
-
-
+var utils = require('../models/utils.js');
 
 
 
@@ -54,7 +53,6 @@ exports.checkUser = function (req, res, next) {
     //得到用户填写的东西
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
-        // console.log(fields);
         //得到表单之后做的事情
         var user_name = fields.user_name;
         db.find("users", {"user_name": user_name}, function (err, result) {
@@ -79,7 +77,6 @@ exports.doRegist = function (req, res, next) {
     //得到用户填写的东西
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
-        // console.log(fields);
         //得到表单之后做的事情
         var user_name = fields.user_name;
         var password = fields.password;
@@ -87,7 +84,6 @@ exports.doRegist = function (req, res, next) {
         var source_id = fields.source_id;
 
         db.getAllCount("users", function (count) {//查找有几个人,长度作为user_id
-            // console.log(count);
             db.find("users", {"user_name": user_name}, function (err, result) {
                 if (err) {
                     res.send({result:"-3"}); //服务器错误
@@ -107,6 +103,7 @@ exports.doRegist = function (req, res, next) {
                     "checkPass": checkPass,
                     "source_id": source_id,
                     "user_id": count+1,
+                    "privileges" : 0,
                 }, function (err, result) {
                     if (err) {
                         res.send({result:"-3"}); //服务器错误
@@ -125,7 +122,6 @@ exports.doRegist = function (req, res, next) {
 };
 
 
-
 //登陆页面的执行
 exports.doLogin = function (req, res, next) {
     //得到用户表单
@@ -137,7 +133,6 @@ exports.doLogin = function (req, res, next) {
         var jiamihou = md5(password);
         //查询数据库，看看有没有个这个人
         db.find("users", {"user_name": user_name}, function (err, result) {
-            console.log(result);
             if (err) {
                 res.send({result:"-5"});
                 return;
@@ -152,7 +147,7 @@ exports.doLogin = function (req, res, next) {
             if (jiamihou == result[0].password) {
                 req.session.login = "1";
                 req.session.user_name = user_name;
-                res.send({result:"1",user_name:user_name,user_id : result[0].user_id});  //登陆成功
+                res.send({result:"1",user_name:user_name,user_id : result[0].user_id,privileges : result[0].privileges});  //登陆成功
                 return;
             } else {
                 res.send({result:"-2"});  //密码错误
@@ -163,28 +158,150 @@ exports.doLogin = function (req, res, next) {
 };
 
 
+//创建,编辑文章
+exports.doEdit = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var title = fields.title;
+        var detail = fields.detail;
+        var main = fields.main;
+        var creat_time = fields.creat_time;
+        var creat_name = fields.creat_name;
+        var creat_user_id = fields.creat_user_id;
+        var art_id = parseInt(fields.art_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // var access_times = fields.access_times;//查看次数
 
+        //新建文章的时候
+        // console.log("art_id",art_id);
+        if(art_id === -1){
+            //查询数据库，看文章有几篇
+            db.getAllCount("articles", function (count) {//查找有几个人,长度作为user_id
+                db.insertOne("articles", {
+                    "title": title,
+                    "detail": detail,
+                    "main": main,
+                    "creat_time": creat_time,
+                    "creat_name": creat_name,
+                    "creat_user_id": creat_user_id,
+                    "art_id" : count + 1,
+                    "access_times" : 0
+                }, function (err, result) {
+                    if (err) {
+                        res.send({result:"-3"}); //服务器错误
+                        return;
+                    }
+                    res.send({result:"1"}); //注册成功，写入session
+                })
 
-
-
-
-
-
-
-
-
-
-
-
-
-//注册页面
-exports.showRegist = function (req, res, next) {
-    res.render("regist", {
-        "login": req.session.login == "1" ? true : false,
-        "user_name": req.session.login == "1" ? req.session.user_name : "",
-        "active": "注册"
+            })
+        }else{
+            db.updateMany("articles", {"art_id": art_id}, {
+                $set: {
+                    "title": title,
+                    "detail": detail,
+                    "main": main
+                }
+            }, function (err, results) {
+                if (err) {
+                    res.send({result:"-3"}); //服务器错误
+                    return;
+                }
+                res.send({result:"1"}); //注册成功，写入session
+            });
+        }
     });
 };
+
+//删除文章
+exports.doDelete = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var art_id = parseInt(fields.art_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // var access_times = fields.access_times;//查看次数
+
+        db.deleteMany("articles", {"art_id": art_id},function (err, results) {
+            if (err) {
+                res.send({result:"-3"}); //服务器错误
+                return;
+            }
+            res.send({result:"1"}); //注册成功，写入session
+        });
+
+    });
+};
+
+//查看文章列表个人
+exports.getArticleList = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var user_id = fields.user_id;
+        db.find("articles",{"creat_user_id":user_id},{"sort":{"art_id":-1}},function(err,result){
+            let data = result.slice(0);
+            if (err) {
+                res.send({"result":"-3"}); //服务器错误
+                return;
+            }
+            data.forEach((x) =>{
+                x.detail = utils.markdown(x.detail);
+            })
+            res.send({"result":data});
+        });
+    });
+};
+
+//查看文章列表所有人
+exports.getArticleListAll = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var user_id = fields.user_id;
+        db.find("articles",{},{"sort":{"art_id":-1}},function(err,result){
+            let data = result.slice(0);
+            if (err) {
+                res.send({"result":"-3"}); //服务器错误
+                return;
+            }
+            data.forEach((x) =>{
+                x.detail = utils.markdown(x.detail);
+            })
+            res.send({"result":data});
+        });
+    });
+};
+
+//查看文章详情
+exports.getArticleDetail = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var art_id = parseInt(fields.art_id);
+        var edit = parseInt(fields.edit);
+        db.find("articles",{"art_id" : art_id},function(err,result){
+            let data = result.slice(0);
+            if (err) {
+                res.send({"result":"-3"}); //服务器错误
+                return;
+            }
+            if(edit === 0){
+                data[0].detail = utils.markdown(data[0].detail);
+                data[0].main = utils.markdown(data[0].main);
+            }
+            res.send({"result":data});
+
+        });
+    });
+};
+
+
+
 
 
 
@@ -228,7 +345,6 @@ exports.dosetavatar = function (req, res, next) {
     form.uploadDir = path.normalize(__dirname + "/../avatar");//上传的文件夹
 
     form.parse(req, function (err, fields, files) {
-        console.log(files);
         var oldpath = files.touxiang.path;
         var newpath = path.normalize(__dirname + "/../avatar") + "/" + req.session.user_name + ".jpg";
         //改文件名字
