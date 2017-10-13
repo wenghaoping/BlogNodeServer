@@ -52,6 +52,9 @@ app.post("/getArticleListAll",router.getArticleListAll);        //获取文章�
 app.post("/getArticleDetail",router.getArticleDetail);        //获取文章详情
 
 
+app.post("/getArticleListAdmin",router.getArticleListAdmin);        //超级管理员-获取文章列表
+
+
 
 
 // app.get("/regist",router.showRegist);       //显示注册页面

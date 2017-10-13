@@ -276,6 +276,28 @@ exports.getArticleListAll = function (req, res, next) {
     });
 };
 
+exports.getArticleListAdmin = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        db.find("articles",{},{"sort":{"creat_user_id":1}},function(err,result){
+            let data = result.slice(0);
+            if (err) {
+                res.send({"result":"-3"}); //服务器错误
+                return;
+            }
+            data.forEach((x) =>{
+                x.detail = utils.markdown(x.detail);
+            })
+            res.send({"result":data});
+        });
+    });
+};
+
+
+
+
 //查看文章详情
 exports.getArticleDetail = function (req, res, next) {
     //得到用户表单
