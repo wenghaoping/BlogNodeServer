@@ -52,7 +52,16 @@ app.post("/getArticleListAll",router.getArticleListAll);        //获取文章�
 app.post("/getArticleDetail",router.getArticleDetail);        //获取文章详情
 
 
-app.post("/getArticleListAdmin",router.getArticleListAdmin);        //超级管理员-获取文章列表
+app.post("/getArticleListAllAdmin",router.getArticleListAllAdmin);        //管理员-获取文章列表
+
+app.post("/getUsersListAdmin",router.getUsersListAdmin);        //超级管理员-获取所有用户信息
+app.post("/userDelete",router.userDelete);        //超级管理员-删除所有用户信息
+app.post("/editUsers",router.editUsers);        //超级管理员-修改管理员信息
+
+
+
+app.post("/doPropose",router.doPropose);        //输入建议
+app.post("/getProposeList",router.getProposeList);        //查看建议
 
 
 

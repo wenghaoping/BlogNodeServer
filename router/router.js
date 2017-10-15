@@ -40,7 +40,6 @@ exports.showIndex = function (req, res, next) {
     });
 };
 
-
 //获取注册下拉框数据
 exports.getSelectValue = function(req, res, next) {
     db.find("sources", {},function (err, result) {
@@ -83,7 +82,7 @@ exports.doRegist = function (req, res, next) {
         var checkPass = fields.checkPass;//二次验证密码
         var source_id = fields.source_id;
 
-        db.getAllCount("users", function (count) {//查找有几个人,长度作为user_id
+        db.getAllCount("userCount", function (count) {//查找有几个人,长度作为user_id
             db.find("users", {"user_name": user_name}, function (err, result) {
                 if (err) {
                     res.send({result:"-3"}); //服务器错误
@@ -109,6 +108,12 @@ exports.doRegist = function (req, res, next) {
                         res.send({result:"-3"}); //服务器错误
                         return;
                     }
+                    db.insertOne("userCount", {
+                        "user_id": count + 1,
+                        "user_name": user_name,
+                    }, function (err, result) {
+
+                    })
                     req.session.login = "1";
                     req.session.user_name = user_name;
                     res.send({result:"1",user_name:user_name,user_id : count+1}); //注册成功，写入session
@@ -120,7 +125,6 @@ exports.doRegist = function (req, res, next) {
 
 
 };
-
 
 //登陆页面的执行
 exports.doLogin = function (req, res, next) {
@@ -167,6 +171,7 @@ exports.doEdit = function (req, res, next) {
         var title = fields.title;
         var detail = fields.detail;
         var main = fields.main;
+        var private = parseInt(fields.private);
         var creat_time = fields.creat_time;
         var creat_name = fields.creat_name;
         var creat_user_id = fields.creat_user_id;
@@ -177,7 +182,7 @@ exports.doEdit = function (req, res, next) {
         // console.log("art_id",art_id);
         if(art_id === -1){
             //查询数据库，看文章有几篇
-            db.getAllCount("articles", function (count) {//查找有几个人,长度作为user_id
+            db.getAllCount("articleCount", function (count) {//查找有几个人,长度作为user_id
                 db.insertOne("articles", {
                     "title": title,
                     "detail": detail,
@@ -185,6 +190,7 @@ exports.doEdit = function (req, res, next) {
                     "creat_time": creat_time,
                     "creat_name": creat_name,
                     "creat_user_id": creat_user_id,
+                    "private": parseInt(private),
                     "art_id" : count + 1,
                     "access_times" : 0
                 }, function (err, result) {
@@ -194,14 +200,20 @@ exports.doEdit = function (req, res, next) {
                     }
                     res.send({result:"1"}); //注册成功，写入session
                 })
+                db.insertOne("articleCount", {
+                    "art_id": count + 1,
+                    "title": title,
+                }, function (err, result) {
 
+                })
             })
         }else{
             db.updateMany("articles", {"art_id": art_id}, {
                 $set: {
                     "title": title,
                     "detail": detail,
-                    "main": main
+                    "main": main,
+                    "private": parseInt(private)
                 }
             }, function (err, results) {
                 if (err) {
@@ -234,14 +246,14 @@ exports.doDelete = function (req, res, next) {
     });
 };
 
-//查看文章列表个人
+//查看文章列表个人(只看自己的文章,普通用户使用)   不管私密不私密
 exports.getArticleList = function (req, res, next) {
     //得到用户表单
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
         var user_id = fields.user_id;
-        db.find("articles",{"creat_user_id":user_id},{"sort":{"art_id":-1}},function(err,result){
+        db.find("articles",{"creat_user_id":user_id},{"sort":{"creat_time":-1}},function(err,result){
             let data = result.slice(0);
             if (err) {
                 res.send({"result":"-3"}); //服务器错误
@@ -255,14 +267,14 @@ exports.getArticleList = function (req, res, next) {
     });
 };
 
-//查看文章列表所有人
+//查看所有文章列表,首页用(不包括私密的)
 exports.getArticleListAll = function (req, res, next) {
     //得到用户表单
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
         var user_id = fields.user_id;
-        db.find("articles",{},{"sort":{"art_id":-1}},function(err,result){
+        db.find("articles",{"private" : 0},{"sort":{"creat_time":-1}},function(err,result){
             let data = result.slice(0);
             if (err) {
                 res.send({"result":"-3"}); //服务器错误
@@ -276,7 +288,8 @@ exports.getArticleListAll = function (req, res, next) {
     });
 };
 
-exports.getArticleListAdmin = function (req, res, next) {
+//获取所有文章列表,管理员入口用(包括私密的,)
+exports.getArticleListAllAdmin = function (req, res, next) {
     //得到用户表单
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
@@ -294,9 +307,6 @@ exports.getArticleListAdmin = function (req, res, next) {
         });
     });
 };
-
-
-
 
 //查看文章详情
 exports.getArticleDetail = function (req, res, next) {
@@ -333,6 +343,147 @@ exports.getArticleDetail = function (req, res, next) {
 
     });
 };
+
+//查看所有用户(只有超级管理员有此入口)
+exports.getUsersListAdmin = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var privileges = parseInt(fields.privileges);//0 普通 1 特权 2超级管理员,只有我有
+
+        if(privileges == 2) {
+            db.find("users",{},{"sort":{"user_id":1}},function(err,result){
+                let data = result.slice(0);
+                if (err) {
+                    res.send({"result":"-3"}); //服务器错误
+                    return;
+                }
+                res.send({"result":data});
+            });
+        }else {
+            res.send({"result":"-4"}); //拒绝请求
+        }
+
+
+
+    });
+};
+
+//删除用户(只有超级管理员有此入口)
+exports.userDelete = function (req, res, next) {
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var user_id = parseInt(fields.user_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // var access_times = fields.access_times;//查看次数
+
+        db.deleteMany("users", {"user_id": user_id},function (err, results) {
+            if (err) {
+                res.send({result:"-3"}); //服务器错误
+                return;
+            }
+            res.send({result:"1"}); //注册成功，写入session
+        });
+    });
+};
+
+//修改用户权限(只有超级管理员有此入口)
+exports.editUsers = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var privileges = parseInt(fields.privileges);//如果是创建,就是空,如果是编辑,就是有数字的
+        var user_id = parseInt(fields.user_id);//如果是创建,就是空,如果是编辑,就是有数字的
+
+        db.updateMany("users", {"user_id": user_id}, {
+            $set: {
+                "privileges": privileges,
+            }
+        }, function (err, results) {
+            if (err) {
+                res.send({result:"-3"}); //服务器错误
+                return;
+            }
+            res.send({result:"1"}); //注册成功，写入session
+        });
+    });
+};
+
+//输入建议入口
+exports.doPropose = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var detail = fields.detail;
+        var creat_time = fields.creat_time;
+        var creat_name = fields.creat_name;
+        var creat_user_id = fields.creat_user_id;
+        var pro_id = parseInt(fields.pro_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // var access_times = fields.access_times;//查看次数
+
+        //新建文章的时候
+        // console.log("art_id",art_id);
+        if(pro_id === -1){
+            //查询数据库，看文章有几篇
+            db.getAllCount("propose", function (count) {//查找有几个人,长度作为user_id
+                db.insertOne("propose", {
+                    "detail": detail,
+                    "creat_time": creat_time,
+                    "creat_name": creat_name,
+                    "creat_user_id": creat_user_id,
+                    "art_id" : count + 1
+                }, function (err, result) {
+                    if (err) {
+                        res.send({result:"-3"}); //服务器错误
+                        return;
+                    }
+                    res.send({result:"1"}); //注册成功，写入session
+                })
+            })
+        }else{
+            db.updateMany("articles", {"art_id": art_id}, {
+                $set: {
+                    "title": title,
+                    "detail": detail,
+                    "main": main,
+                    "private": parseInt(private)
+                }
+            }, function (err, results) {
+                if (err) {
+                    res.send({result:"-3"}); //服务器错误
+                    return;
+                }
+                res.send({result:"1"}); //注册成功，写入session
+            });
+        }
+    });
+};
+
+//查看文章列表个人(只看自己的文章,普通用户使用)   不管私密不私密
+exports.getProposeList = function (req, res, next) {
+    //得到用户表单
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        var user_id = fields.user_id;
+        db.find("propose",{},{"sort":{"pro_id":-1}},function(err,result){
+            let data = result.slice(0);
+            if (err) {
+                res.send({"result":"-3"}); //服务器错误
+                return;
+            }
+            res.send({"result":data});
+        });
+    });
+};
+
+
+
+
+
 
 
 

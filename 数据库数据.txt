@@ -1,4 +1,4 @@
-source  来源表
+sources  来源表
 
 {
     "id" : 1,
@@ -24,4 +24,4 @@ password
 checkPass
 source_id
 user_id
-privileges 0 普通 1 特权
+privileges 0 普通 1 特权 2超级管理员,只有我有

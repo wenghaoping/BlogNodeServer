@@ -26,6 +26,28 @@ function init(){
             console.log(err);
             return;
         }
+        db.collection('userCount').createIndex(
+            { "uese_id": 1},
+            null,
+            function(err, results) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+            }
+        );
+
+        db.collection('articleCount').createIndex(
+            { "art_id": 1},
+            null,
+            function(err, results) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+            }
+        );
+
         db.collection('users').createIndex(
             { "uese_id": 1},
             null,

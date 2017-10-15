@@ -15,15 +15,26 @@ journal=true
 #这个选项可以过滤掉一些无用的日志信息，若需要调试使用请设置为false
 quiet=true
 
-echo "/usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/data –logpath=/usr/local/server/mongodb/logs/mongodb.log –logappend --auth –port=27017" >> /etc/rc.local
 
+//开启机器
+echo "/usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/data –logpath=/usr/local/server/mongodb/logs –logappend --auth –port=27017" >> /etc/rc.local
+
+//启动
+/usr/local/mongodb/bin/mongod --dbpath=/usr/local/mongodb/mongodb/data --logpath=/usr/local/mongodb/mongodb/logs --logappend --port=27017 --fork
+
+
+
+/usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/data --logpath=/usr/local/server/mongodb/logs --logappend --port=27017 --fork
 
 ./mongod --config /usr/local/mongodb/etc/mongo.conf --fork
 
 
 db.createUser({user:"root",pwd:"0p-0p-0p-",roles:["root"]});
 
-
+tar zxf
+作者： 极客教程 
+链接：http://www.imooc.com/article/14770
+来源：慕课网
 
 mongod --config C:\MongoDB\etc\mongo.conf --install --auth
 
