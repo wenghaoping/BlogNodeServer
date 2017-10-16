@@ -26,15 +26,11 @@ echo "/usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/da
 
 /usr/local/server/mongodb/bin/mongod --dbpath=/usr/local/server/mongodb/data --logpath=/usr/local/server/mongodb/logs --logappend --port=27017 --fork
 
-./mongod --config /usr/local/mongodb/etc/mongo.conf --fork
+./mongod --config /usr/local/mongodb/mongodb/etc/mongo.conf --fork
 
 
-db.createUser({user:"root",pwd:"0p-0p-0p-",roles:["root"]});
+db.createUser({user:"admin",pwd:"0p-0p-0p-",roles:["root"]});
 
-tar zxf
-作者： 极客教程 
-链接：http://www.imooc.com/article/14770
-来源：慕课网
 
 mongod --config C:\MongoDB\etc\mongo.conf --install --auth
 
@@ -42,3 +38,14 @@ mongod --config C:\MongoDB\etc\mongo.conf --install --auth
 mongod.exe --logpath C:\MongoDB\logs\mongodb.log --logappend --dbpath C:\MongoDB\data --directoryperdb --serviceName MongoDB --install
 
 mongod --config C:\MongoDB\etc\mongo.conf
+
+
+
+
+
+/LinuxSoft/Node/node-v6.10.3-linux-x64/lib/node_modules/forever/bin
+forever start test.js
+forever stop test.js
+forever restart test.js
+
+
