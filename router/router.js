@@ -325,11 +325,10 @@ exports.getArticleDetail = function (req, res, next) {
                 return;
             }
             accessTime = data[0].access_times;
-            console.log(accessTime);
-            if(edit === 0){
-                data[0].detail = utils.markdown(data[0].detail);
-                data[0].main = utils.markdown(data[0].main);
-            }
+            // if(edit === 0){
+            //     data[0].detail = utils.markdown(data[0].detail);
+            //     data[0].main = utils.markdown(data[0].main);
+            // }
             db.updateMany("articles", {"art_id": art_id}, {
                 $set: {
                     "access_times": accessTime + 1,
@@ -469,7 +468,7 @@ exports.getProposeList = function (req, res, next) {
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
         var user_id = fields.user_id;
-        db.find("propose",{},{"sort":{"pro_id":-1}},function(err,result){
+        db.find("propose",{},{"sort":{"art_id":-1}},function(err,result){
             let data = result.slice(0);
             if (err) {
                 res.send({"result":"-3"}); //服务器错误
