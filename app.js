@@ -1,5 +1,10 @@
 var express = require("express");
 var app = express();
+
+//socket.io公式：
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
 var router = require("./router/router.js");
 var session = require('express-session');
 
@@ -10,12 +15,14 @@ app.all('*',function (req, res, next) {
   res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 
-  if (req.method == 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     res.send(200); //让options请求快速返回
   } else {
     next();
   }
 });
+
+
 
 //使用session
 app.use(session({
@@ -27,6 +34,7 @@ app.use(function (req, res, next) {
     res.locals.utils = utils;
     next();
 });
+
 //模板引擎
 app.set("view engine","ejs");
 //静态页面
@@ -63,24 +71,22 @@ app.post("/editUsers",router.editUsers);        //超级管理员-修改管理�
 app.post("/doPropose",router.doPropose);        //输入建议
 app.post("/getProposeList",router.getProposeList);        //查看建议
 
+app.post("/doChat",router.doChat);        //聊天消息写入数据库
+
+app.post("/getChatList",router.getChatList);        // 读取所有聊天记录，
 
 
 
-// app.get("/regist",router.showRegist);       //显示注册页面
+io.on("connection",function(socket){
+    console.log('User connected');
+    socket.on("chat",function(msg){
+        //把接收到的msg原样广播
+        io.emit("chat",msg);
+    });
+    //断开事件
+    socket.on('disconnect',function(){
+        console.log('User disconnected');
+    });
+});
 
-// app.get("/login",router.showLogin);         //显示登陆页面
-
-// app.get("/setavatar",router.showSetavatar); //设置头像页面
-// app.post("/dosetavatar",router.dosetavatar);//执行设置头像，Ajax服务
-// app.get("/cut",router.showcut);             //剪裁头像页面
-// app.post("/post",router.doPost);            //发表说说
-// app.get("/docut",router.docut);             //执行剪裁
-// app.get("/getAllShuoshuo",router.getAllShuoshuo);  //列出所有说说Ajax服务
-// app.get("/getuserinfo",router.getuserinfo);  //列出所有说说Ajax服务
-// app.get("/getshuoshuoamount",router.getshuoshuoamount);  //说说总数
-// app.get("/user/:user",router.showUser);  //显示用户所有说说
-// app.get("/post/:oid",router.showUser);  //显示用户所有说说
-// app.get("/userlist",router.showuserlist);  //显示所有用户列表
-
-
-app.listen(3000);
+http.listen(3000);

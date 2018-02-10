@@ -1,13 +1,13 @@
 /**
  * Created by Danny on 2015/9/26 15:39.
  */
-var formidable = require("formidable");
-var db = require("../models/db.js");
-var md5 = require("../models/md5.js");
-var path = require("path");
-var fs = require("fs");
-var gm = require("gm");
-var utils = require('../models/utils.js');
+let formidable = require("formidable");
+let db = require("../models/db.js");
+let md5 = require("../models/md5.js");
+let path = require("path");
+let fs = require("fs");
+let gm = require("gm");
+let utils = require('../models/utils.js');
 
 
 
@@ -17,19 +17,19 @@ exports.showIndex = function (req, res, next) {
     //检索数据库，查找此人的头像
     if (req.session.login == "1") {
         //如果登陆了
-        var user_name = req.session.user_name;
-        var login = true;
+        let user_name = req.session.user_name;
+        let login = true;
     } else {
         //没有登陆
-        var user_name = "";  //制定一个空用户名
-        var login = false;
+        let user_name = "";  //制定一个空用户名
+        let login = false;
     }
     //已经登陆了，那么就要检索数据库，查登陆这个人的头像
     db.find("users", {user_name: user_name},function (err, result) {
         if (result.length == 0) {
-            var avatar = "moren.jpg";
+            let avatar = "moren.jpg";
         } else {
-            var avatar = result[0].avatar;
+            let avatar = result[0].avatar;
         }
         res.json({
             "login": login,
@@ -50,10 +50,10 @@ exports.getSelectValue = function(req, res, next) {
 //查询有没有这个人
 exports.checkUser = function (req, res, next) {
     //得到用户填写的东西
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var user_name = fields.user_name;
+        let user_name = fields.user_name;
         db.find("users", {"user_name": user_name}, function (err, result) {
             if (err) {
                 res.send({result:"-3"}); //服务器错误
@@ -74,13 +74,13 @@ exports.checkUser = function (req, res, next) {
 //注册业务
 exports.doRegist = function (req, res, next) {
     //得到用户填写的东西
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var user_name = fields.user_name;
-        var password = fields.password;
-        var checkPass = fields.checkPass;//二次验证密码
-        var source_id = fields.source_id;
+        let user_name = fields.user_name;
+        let password = fields.password;
+        let checkPass = fields.checkPass;//二次验证密码
+        let source_id = fields.source_id;
 
         db.getAllCount("userCount", function (count) {//查找有几个人,长度作为user_id
             db.find("users", {"user_name": user_name}, function (err, result) {
@@ -129,12 +129,12 @@ exports.doRegist = function (req, res, next) {
 //登陆页面的执行
 exports.doLogin = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var user_name = fields.user_name;
-        var password = fields.password;
-        var jiamihou = md5(password);
+        let user_name = fields.user_name;
+        let password = fields.password;
+        let jiamihou = md5(password);
         //查询数据库，看看有没有个这个人
         db.find("users", {"user_name": user_name}, function (err, result) {
             if (err) {
@@ -165,18 +165,18 @@ exports.doLogin = function (req, res, next) {
 //创建,编辑文章
 exports.doEdit = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var title = fields.title;
-        var detail = fields.detail;
-        var main = fields.main;
-        var private = parseInt(fields.private);
-        var creat_time = fields.creat_time;
-        var creat_name = fields.creat_name;
-        var creat_user_id = fields.creat_user_id;
-        var art_id = parseInt(fields.art_id);//如果是创建,就是空,如果是编辑,就是有数字的
-        // var access_times = fields.access_times;//查看次数
+        let title = fields.title;
+        let detail = fields.detail;
+        let main = fields.main;
+        var private = fields.private;
+        let creat_time = fields.creat_time;
+        let creat_name = fields.creat_name;
+        let creat_user_id = fields.creat_user_id;
+        let art_id = parseInt(fields.art_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // let access_times = fields.access_times;//查看次数
 
         //新建文章的时候
         // console.log("art_id",art_id);
@@ -229,11 +229,11 @@ exports.doEdit = function (req, res, next) {
 //删除文章
 exports.doDelete = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var art_id = parseInt(fields.art_id);//如果是创建,就是空,如果是编辑,就是有数字的
-        // var access_times = fields.access_times;//查看次数
+        let art_id = parseInt(fields.art_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // let access_times = fields.access_times;//查看次数
 
         db.deleteMany("articles", {"art_id": art_id},function (err, results) {
             if (err) {
@@ -249,10 +249,10 @@ exports.doDelete = function (req, res, next) {
 //查看文章列表个人(只看自己的文章,普通用户使用)   不管私密不私密
 exports.getArticleList = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var user_id = fields.user_id;
+        let user_id = fields.user_id;
         db.find("articles",{"creat_user_id":user_id},{"sort":{"creat_time":-1}},function(err,result){
             let data = result.slice(0);
             if (err) {
@@ -270,10 +270,10 @@ exports.getArticleList = function (req, res, next) {
 //查看所有文章列表,首页用(不包括私密的)
 exports.getArticleListAll = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var user_id = fields.user_id;
+        let user_id = fields.user_id;
         db.find("articles",{"private" : 0},{"sort":{"creat_time":-1}},function(err,result){
             let data = result.slice(0);
             if (err) {
@@ -291,7 +291,7 @@ exports.getArticleListAll = function (req, res, next) {
 //获取所有文章列表,管理员入口用(包括私密的,)
 exports.getArticleListAllAdmin = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
         db.find("articles",{},{"sort":{"creat_user_id":1}},function(err,result){
@@ -311,12 +311,12 @@ exports.getArticleListAllAdmin = function (req, res, next) {
 //查看文章详情
 exports.getArticleDetail = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var art_id = parseInt(fields.art_id);
-        var edit = parseInt(fields.edit);
-        var accessTime = 0;
+        let art_id = parseInt(fields.art_id);
+        let edit = parseInt(fields.edit);
+        let accessTime = 0;
         db.find("articles",{"art_id" : art_id},function(err,result){
 
             let data = result.slice(0);
@@ -346,10 +346,10 @@ exports.getArticleDetail = function (req, res, next) {
 //查看所有用户(只有超级管理员有此入口)
 exports.getUsersListAdmin = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var privileges = parseInt(fields.privileges);//0 普通 1 特权 2超级管理员,只有我有
+        let privileges = parseInt(fields.privileges);//0 普通 1 特权 2超级管理员,只有我有
 
         if(privileges == 2) {
             db.find("users",{},{"sort":{"user_id":1}},function(err,result){
@@ -371,11 +371,11 @@ exports.getUsersListAdmin = function (req, res, next) {
 
 //删除用户(只有超级管理员有此入口)
 exports.userDelete = function (req, res, next) {
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var user_id = parseInt(fields.user_id);//如果是创建,就是空,如果是编辑,就是有数字的
-        // var access_times = fields.access_times;//查看次数
+        let user_id = parseInt(fields.user_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // let access_times = fields.access_times;//查看次数
 
         db.deleteMany("users", {"user_id": user_id},function (err, results) {
             if (err) {
@@ -390,11 +390,11 @@ exports.userDelete = function (req, res, next) {
 //修改用户权限(只有超级管理员有此入口)
 exports.editUsers = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var privileges = parseInt(fields.privileges);//如果是创建,就是空,如果是编辑,就是有数字的
-        var user_id = parseInt(fields.user_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        let privileges = parseInt(fields.privileges);//如果是创建,就是空,如果是编辑,就是有数字的
+        let user_id = parseInt(fields.user_id);//如果是创建,就是空,如果是编辑,就是有数字的
 
         db.updateMany("users", {"user_id": user_id}, {
             $set: {
@@ -413,15 +413,15 @@ exports.editUsers = function (req, res, next) {
 //输入建议入口
 exports.doPropose = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var detail = fields.detail;
-        var creat_time = fields.creat_time;
-        var creat_name = fields.creat_name;
-        var creat_user_id = fields.creat_user_id;
-        var pro_id = parseInt(fields.pro_id);//如果是创建,就是空,如果是编辑,就是有数字的
-        // var access_times = fields.access_times;//查看次数
+        let detail = fields.detail;
+        let creat_time = fields.creat_time;
+        let creat_name = fields.creat_name;
+        let creat_user_id = fields.creat_user_id;
+        let pro_id = parseInt(fields.pro_id);//如果是创建,就是空,如果是编辑,就是有数字的
+        // let access_times = fields.access_times;//查看次数
 
         //新建文章的时候
         // console.log("art_id",art_id);
@@ -464,10 +464,10 @@ exports.doPropose = function (req, res, next) {
 //查看文章列表个人(只看自己的文章,普通用户使用)   不管私密不私密
 exports.getProposeList = function (req, res, next) {
     //得到用户表单
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var user_id = fields.user_id;
+        let user_id = fields.user_id;
         db.find("propose",{},{"sort":{"art_id":-1}},function(err,result){
             let data = result.slice(0);
             if (err) {
@@ -479,9 +479,44 @@ exports.getProposeList = function (req, res, next) {
     });
 };
 
+// 发送聊天消息，并且存储到数据库
+exports.doChat = function (req, res, next) {
+    //得到用户表单
+    let form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        //得到表单之后做的事情
+        let chat_name = fields.chat_name || '本条出错';
+        let detail = fields.detail || '本条出错';
+        let chat_time = fields.chat_time || '本条出错';
+        db.getAllCount("chatlists", function (count) {//查找有几个人,长度作为user_id
+            db.insertOne("chatlists", {
+                "chat_name": chat_name,
+                "detail": detail,
+                "chat_time": chat_time,
+                "chat_id" : count + 1
+            }, function (err, result) {
+                if (err) {
+                    res.send({result:"-3"}); //服务器错误
+                    return;
+                }
+                res.send({result:"1"}); //注册成功，写入session
+            })
+        })
+    });
+};
 
-
-
+// 读取所有聊天记录
+exports.getChatList = function (req, res, next) {
+    //得到用户表单
+    db.find("chatlists",{},{"sort":{"chat_id": -1}},function(err,result){
+        let data = result.slice(0);
+        if (err) {
+            res.send({"result":"-3"}); //服务器错误
+            return;
+        }
+        res.send({"result":data});
+    });
+};
 
 
 
@@ -524,13 +559,13 @@ exports.dosetavatar = function (req, res, next) {
         return;
     }
 
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
 
     form.uploadDir = path.normalize(__dirname + "/../avatar");//上传的文件夹
 
     form.parse(req, function (err, fields, files) {
-        var oldpath = files.touxiang.path;
-        var newpath = path.normalize(__dirname + "/../avatar") + "/" + req.session.user_name + ".jpg";
+        let oldpath = files.touxiang.path;
+        let newpath = path.normalize(__dirname + "/../avatar") + "/" + req.session.user_name + ".jpg";
         //改文件名字
         fs.rename(oldpath, newpath, function (err) {
             if (err) {
@@ -565,11 +600,11 @@ exports.docut = function (req, res, next) {
     }
     //这个页面接收几个GET请求参数
     //w、h、x、y
-    var filename = req.session.avatar;
-    var w = req.query.w;
-    var h = req.query.h;
-    var x = req.query.x;
-    var y = req.query.y;
+    let filename = req.session.avatar;
+    let w = req.query.w;
+    let h = req.query.h;
+    let x = req.query.x;
+    let y = req.query.y;
 
     gm("./avatar/" + filename)
         .crop(w, h, x, y)
@@ -597,13 +632,13 @@ exports.doPost = function (req, res, next) {
         return;
     }
     //用户名
-    var user_name = req.session.user_name;
+    let user_name = req.session.user_name;
 
     //得到用户填写的东西
-    var form = new formidable.IncomingForm();
+    let form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         //得到表单之后做的事情
-        var content = fields.content;
+        let content = fields.content;
 
         //现在可以证明，用户名没有被占用
         db.insertOne("posts", {
@@ -624,7 +659,7 @@ exports.doPost = function (req, res, next) {
 //列出所有说说，有分页功能
 exports.getAllShuoshuo = function(req,res,next){
     //这个页面接收一个参数，页面
-    var page = req.query.page;
+    let page = req.query.page;
     db.find("posts",{},{"pageamount":6,"page":page,"sort":{"datetime":-1}},function(err,result){
         res.json(result);
     });
@@ -634,13 +669,13 @@ exports.getAllShuoshuo = function(req,res,next){
 //列出某个用户的信息
 exports.getuserinfo = function(req,res,next){
     //这个页面接收一个参数，页面
-    var user_name = req.query.user_name;
+    let user_name = req.query.user_name;
     db.find("users",{"user_name":user_name},function(err,result){
         if(err || result.length == 0){
             res.json("");
             return;
         }
-        var obj = {
+        let obj = {
             "user_name" : result[0].user_name,
             "avatar" : result[0].avatar,
             "_id" : result[0]._id
@@ -658,7 +693,7 @@ exports.getshuoshuoamount = function(req,res,next){
 
 //显示某一个用户的个人主页
 exports.showUser = function(req,res,next){
-    var user = req.params["user"];
+    let user = req.params["user"];
     db.find("posts",{"user_name":user},function(err,result){
        db.find("users",{"user_name":user},function(err,result2){
            res.render("user",{
